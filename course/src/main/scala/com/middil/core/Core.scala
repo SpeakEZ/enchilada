@@ -16,11 +16,11 @@ trait BootedCore extends Core {
 trait CoreActors {
   this: Core =>
 
-//  val accounts = system.actorOf(Props[Accounts])
-//
-//  val demoActivity1 = Activity(UUID.randomUUID, "Activity 1", "<h1>Activity 1</h1>")
-//  val demoActivity2 = Activity(UUID.randomUUID, "Activity 2", "<h1>Activity 2</h1>")
-//  val demoCourse = Course(UUID.randomUUID, "Demo Course", List(demoActivity1, demoActivity2))
-//
-//  val classroom = system.actorOf(Props(new Classroom("Demo Class", demoCourse)))
+  val accounts = system.actorOf(Props[Accounts])
+
+  val demoActivity1 = Activity(UUID.randomUUID, "Activity 1", "<h1>Activity 1</h1>")
+  val demoActivity2 = Activity(UUID.randomUUID, "Activity 2", "<h1>Activity 2</h1>")
+  val demoCourse = Course(UUID.randomUUID, "Demo Course", List(demoActivity1, demoActivity2))
+
+  val classroom = system.actorOf(Props(new Classroom("Demo Class", demoCourse)))
 }
