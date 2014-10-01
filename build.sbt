@@ -1,7 +1,7 @@
 import Dependencies._
 
 
-scalaVersion in ThisBuild := "2.11.4"
+scalaVersion in ThisBuild := "2.11.2"
 
 
 lazy val course = (project in file("course")).

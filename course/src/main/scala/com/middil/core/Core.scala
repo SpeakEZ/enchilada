@@ -8,7 +8,7 @@ trait Core {
 }
 
 trait BootedCore extends Core {
-  implicit lazy val system = ActorSystem("akka-spray")
+  implicit lazy val system = ActorSystem("course")
 
   sys.addShutdownHook(system.shutdown())
 }
