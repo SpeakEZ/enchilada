@@ -8,6 +8,7 @@ import scala.collection.mutable
 object Accounts {
   case class CreateUser(user: MakeUserInfo)
   case class DeleteUser(email: String)
+  case object ShowAllUsers
   case object SuccessResult
   case object FailResult
 }
@@ -31,7 +32,9 @@ class Accounts extends Actor {
         sender ! Right(SuccessResult) }
       else
         sender ! Left(FailResult)
-
+    case ShowAllUsers =>
+      if (users.isEmpty) sender ! Left(FailResult)
+      else sender ! Right(users.toList)
   }
 
   private def validUserInfo(user: MakeUserInfo): Boolean =

@@ -13,6 +13,7 @@ import com.middil.web.Web
 import akka.pattern.ask
 import spray.routing.Directives._
 
+// This does not work
 //object Main extends App with Web with Api with BootedCore with CoreActors
 
 // This works
