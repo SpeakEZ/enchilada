@@ -28,7 +28,10 @@ class Accounts extends Actor {
         sender ! Left(FailResult)
     case DeleteUser(email) =>
       if (!email.isEmpty) {
+        println(users)
+        println("email = " + email)
         users = users filter (_.email != email)
+        println(users)
         sender ! Right(SuccessResult) }
       else
         sender ! Left(FailResult)

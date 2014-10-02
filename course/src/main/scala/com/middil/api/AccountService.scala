@@ -13,9 +13,9 @@ import spray.http._
 
 case class JustPrintThisString(string: String)
 
-object JustPrintThisStringJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
-  implicit val PortfolioFormats = jsonFormat1(JustPrintThisString)
-}
+//object JustPrintThisStringJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
+//  implicit val PortfolioFormats = jsonFormat1(JustPrintThisString)
+//}
 
 class AccountService(accounts: ActorRef)(implicit executionContext: ExecutionContext)
   extends Directives with DefaultJsonFormats {
@@ -28,6 +28,7 @@ class AccountService(accounts: ActorRef)(implicit executionContext: ExecutionCon
   implicit val deleteUserFormat = jsonFormat1(DeleteUser)
   implicit val successResultFormat = jsonObjectFormat[SuccessResult.type]
   implicit val failResultFormat = jsonObjectFormat[FailResult.type]
+
   implicit val justPrintThisStringFormat = jsonFormat1(JustPrintThisString)
 
   implicit object EitherErrorSelector extends ErrorSelector[FailResult.type] {
@@ -37,7 +38,7 @@ class AccountService(accounts: ActorRef)(implicit executionContext: ExecutionCon
   implicit val timeout = Timeout(2.seconds)
 
 
-  val justPrintTheString = (stringy: JustPrintThisString) => println(stringy.string)
+  val justPrintThisString = (stringy: JustPrintThisString) => stringy.string
 
   val route =
     path("createUser") {
@@ -69,7 +70,7 @@ class AccountService(accounts: ActorRef)(implicit executionContext: ExecutionCon
   } ~
   path("justprintthisstring") {
     post {
-      handleWith(justPrintTheString)
+      handleWith(justPrintThisString)
     }
   }
 }
