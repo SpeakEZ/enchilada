@@ -1,30 +1,45 @@
 package com.middil.core
 
-import akka.actor.Actor
+import java.util.UUID
+
+import akka.actor.{ActorRef, Actor}
+import com.middil.core.Accounts.{DroppedStudent, EnrolledStudent}
 import scala.collection.mutable
 
 object Classroom {
-  case class AddStudent(student: User)
-  case class DropStudent(student: User)
-  case class TakeCourse(student: User) // Show the first activity if student in students
+  case class AddStudent(studentRef: UUID)
+  case class DropStudent(studentRef: UUID)
+  case class TakeCourse(studentRef: UUID) // Show the first activity if student in students
+  case object ShowAllStudents
   case object SuccessResult
   case object FailResult
 }
 
-class Classroom(className: String, course: Course) extends Actor {
+class Classroom(className: String, course: Course, eventSource: ActorRef) extends Actor {
   import Classroom._
+  import EventSource._
 
-  var students: mutable.Set[User] = mutable.Set.empty[User]
+  override def preStart() { eventSource ! RegisterListener(self) }
 
-  def receive = {
-    case AddStudent(student) => {
-      students += student
+
+  val myID = UUID.randomUUID
+  var studentRefs: mutable.Set[UUID] = mutable.Set.empty[UUID]
+
+  def classroomReceive: Receive = {
+    case AddStudent(studentRef) => {
+      studentRefs += studentRef
+      eventSource ! BroadcastMessage(EnrolledStudent(studentRef, myID))
       sender ! Right(SuccessResult) }
-    case DropStudent(student) => {
-      students -= student
+    case DropStudent(studentRef) => {
+      studentRefs -= studentRef
+      eventSource ! BroadcastMessage(DroppedStudent(studentRef, myID))
       sender ! Right(SuccessResult) }
-    case TakeCourse(student) => if (students contains student)
-      Right(course.activities.head.XML)
+    case TakeCourse(studentRef) =>
+      if (studentRefs contains studentRef)
+        sender ! Right(course.activities.head.XML)
       else sender ! Left(FailResult)
+    case ShowAllStudents => sender ! studentRefs.toList
   }
+
+  def receive = classroomReceive
 }

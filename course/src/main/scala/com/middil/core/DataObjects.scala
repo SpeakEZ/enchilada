@@ -13,8 +13,10 @@ object MyJsonProtocol extends DefaultJsonProtocol {
         case x           => deserializationError("Expected UUID as JsString, but got " + x)
       }
   }
+
   implicit val userFormat = jsonFormat6(User)
-  implicit val makeUserInfoFormat = jsonFormat3(MakeUserInfo)
+  // Need to specify fields b/c extra 'val' in case class definition.
+  implicit val makeUserInfoFormat = jsonFormat(MakeUserInfo, "firstName", "lastName", "email")
   implicit val activityFormat = jsonFormat3(Activity)
   implicit val courseFormat = jsonFormat3(Course)
   implicit val gradeFormat = jsonFormat6(Grade)
@@ -27,7 +29,10 @@ case class User(id: UUID,
                 classes: List[UUID],
                 grades: List[UUID])
 
-case class MakeUserInfo(firstName: String, lastName: String, email: String)
+
+case class MakeUserInfo(firstName: String, lastName: String, email: String) {
+  val validUser = !(firstName.isEmpty || lastName.isEmpty || email.isEmpty)
+}
 
 case class Activity(id: UUID, name: String, XML: String)
 case class Course(id: UUID, name: String, activities: List[Activity])
