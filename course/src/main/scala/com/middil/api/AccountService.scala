@@ -17,7 +17,6 @@ class AccountService(accounts: ActorRef)(implicit executionContext: ExecutionCon
 
   import Accounts._
 
-
   implicit val createUserFormat = jsonFormat1(CreateUser)
   implicit val deleteUserFormat = jsonFormat1(DeleteUser)
   implicit val enrolledStudentFormat = jsonFormat2(EnrolledStudent)
