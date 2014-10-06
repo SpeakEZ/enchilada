@@ -10,7 +10,8 @@ trait Api extends RouteConcatenation {
   private implicit val _ = system.dispatcher
 
   val routes =
-    new DemoService(demo).route
+    new AccountService(accounts).route ~
+    new ClassroomService(classroom).route
 
   val rootService = system.actorOf(Props(new RoutedHttpService(routes)))
 

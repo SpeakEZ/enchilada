@@ -1,11 +1,34 @@
 package com.middil.api
 
+import spray.httpx.unmarshalling.Unmarshaller
 import spray.json._
 import java.util.UUID
 import scala.reflect.ClassTag
 import spray.httpx.marshalling.{MetaMarshallers, Marshaller, CollectingMarshallingContext}
-import spray.http.StatusCode
-import spray.httpx.SprayJsonSupport
+import spray.http._
+//import spray.httpx.SprayJsonSupport
+
+// spray-json 1.3.0 and spray 1.x.1 incompatability fix
+trait SprayJsonSupport {
+
+  implicit def sprayJsonUnmarshallerConverter[T](reader: RootJsonReader[T]) =
+    sprayJsonUnmarshaller(reader)
+  implicit def sprayJsonUnmarshaller[T: RootJsonReader] =
+    Unmarshaller[T](MediaTypes.`application/json`) {
+      case x: HttpEntity.NonEmpty ⇒
+        val json = JsonParser(x.asString(defaultCharset = HttpCharsets.`UTF-8`))
+        jsonReader[T].read(json)
+    }
+  implicit def sprayJsonMarshallerConverter[T](writer: RootJsonWriter[T])(implicit printer: JsonPrinter = PrettyPrinter) =
+    sprayJsonMarshaller[T](writer, printer)
+  implicit def sprayJsonMarshaller[T](implicit writer: RootJsonWriter[T], printer: JsonPrinter = PrettyPrinter) =
+    Marshaller.delegate[T, String](ContentTypes.`application/json`) { value ⇒
+      val json = writer.write(value)
+      printer(json)
+    }
+}
+
+object SprayJsonSupport extends SprayJsonSupport
 
 /**
  * Contains useful JSON formats: ``j.u.Date``, ``j.u.UUID`` and others; it is useful
