@@ -13,7 +13,7 @@ object Dependencies {
   val sprayTestkit = "io.spray" %% "spray-testkit" % sprayVersion % "test"
   val sprayJson = "io.spray" %%  "spray-json" % "1.3.0"
   val logbackClassic =  "ch.qos.logback" % "logback-classic"  % "1.0.13"
-  val akkaPersistence = "com.typesafe.akka" %% "akka-persisetence-experimental" % "2.3.6"
+  val akkaPersistence = "com.typesafe.akka" %% "akka-persistence-experimental" % "2.3.6"
 
   val serviceDependencies: Seq[ModuleID] = Seq(
     akkaActor,

@@ -2,9 +2,10 @@ package com.middil.user.core
 
 import akka.actor.{Props, ActorRef, ActorLogging, Actor}
 import akka.pattern.ask
+import akka.util.Timeout
 import com.middil.dataobjects.Grades
-
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 case class BaseUserInfo(firstName: String,
                         lastName: String,
@@ -37,6 +38,9 @@ class Student(userInfo: BaseUserInfo) extends Actor
   this: EnrollmentProvider =>
   import Student._
 
+  implicit val askTimeout = Timeout(1.second)
+  implicit val ec = context.dispatcher
+
   val BaseUserInfo(firstName, lastName, userName, email) = userInfo
 
   def noEnrollments: Receive = {
@@ -44,7 +48,7 @@ class Student(userInfo: BaseUserInfo) extends Actor
       sender ! UserInfo(userInfo, Nil)
     case Enroll(classroom) =>
       context become withEnrollments(context.actorOf(Props(
-        newEnrollment(classroom)), s"Enrollment $classroom"))
+        newEnrollment(classroom)), s"Enrollment_${classroom.path.name}"))
   }
 
   def withEnrollments(activeEnrollment: ActorRef): Receive = {
@@ -57,25 +61,30 @@ class Student(userInfo: BaseUserInfo) extends Actor
       }
 
     case SetActiveEnrollment(classroomName) =>
-      context.actorSelection(classroomName).resolveOne() onSuccess {
-        case e =>
-          context become withEnrollments(e)
+      context.child(s"Enrollment_$classroomName") match {
+        case Some(enrollment) =>
+          context become withEnrollments(enrollment)
+        case None =>
+          log info s"$self cannot find enrollment $classroomName"
       }
 
     case Enroll(classroom) =>
       context become withEnrollments(context.actorOf(Props(
-        newEnrollment(classroom)), s"Enrollment $classroom"))
+        newEnrollment(classroom)), s"Enrollment_$classroom"))
 
     case Drop(classroomName) =>
-      context.actorSelection(classroomName).resolveOne() onSuccess {
-        case e =>
-          context stop e
+      context.child(s"Enrollment_$classroomName") match {
+        case Some(enrollment) if enrollment == activeEnrollment =>
+          context stop enrollment
+          // Do I need to make sure 'stop' has completed first?
           context.children.toSeq match {
-            case Seq(enrollment, _*) =>
-              context become withEnrollments(enrollment)
+            case Seq(nextEnrollment, _*) =>
+              context become withEnrollments(nextEnrollment)
             case Nil =>
               context become noEnrollments
           }
+        case Some(enrollment) =>
+          context stop enrollment
       }
 
     case AttendClass =>
