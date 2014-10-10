@@ -1,0 +1,58 @@
+package com.middil.user.core
+
+import akka.actor.{ActorRef, ActorLogging, Actor}
+
+// temp location for data objects
+type UserName = String
+case class Grade(activityName: String, grade: Float)
+case class Grades(courseName: String, grades: List[Grade])
+
+trait StudentProvider {
+  def newStudent: Actor = new Student
+}
+
+object Student {
+  case object ShowAllUserInfo
+  case class UserInfo(username: String, grades: List[Grades])
+
+  // classrooms (i.e. sections) are actors
+  case class Enroll(classroom: ActorRef)
+  case class Drop(classroomName: String)
+
+  case class ShowGradesForClassroom(classroomName: String)
+
+  case class SetActiveEnrollment(classroomName: String)
+
+  case object AttendClass
+}
+
+class Student extends Actor with ActorLogging {
+
+
+
+}
+
+// contexts:
+// no enrollments
+// no active enrollment(s) - old enrollments & grades
+// active enrollment(s) - 1 current enrollment, other enrollments, & grades
+
+
+// each enrollment references the course, grades & teacher
+//   (or would that be a 'classroom' info?)
+
+// messages for each context:
+// no enrollments:
+//   - enroll in a course / add to classroom
+//   - get user info
+// no active enrollments:
+//   - enroll in a course / add to classroom
+//   - get user info
+//   - get grades / classroom info for old enrollment
+// active enrollment:
+//   - enroll in a course / add to classroom
+//   - get user info
+//   - drop from course / classroom
+//   - 'go to class', whatever that involves
+//   - change active enrollment / classroom
+//   - show grades
