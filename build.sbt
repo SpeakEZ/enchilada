@@ -10,3 +10,7 @@ lazy val course = (project in file("course")).
     libraryDependencies ++= serviceDependencies
   )
 
+lazy val user = (project in file("user")).
+  settings(
+    libraryDependencies ++= serviceDependencies
+  )
