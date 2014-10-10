@@ -24,17 +24,17 @@ object Student {
   case class AllEnrollments(enrollments: List[ActorRef])
 
   case class Enroll(classroom: ActorRef)
-  case class Drop(classroomName: String)
+  case class Drop(classroom: ActorRef)
 
-  case class ShowGradesForClassroom(classroomName: String)
-  case class SetActiveEnrollment(classroomName: String)
+  case class ShowGradesForClassroom(classroom: ActorRef)
+  case class SetActiveEnrollment(classroom: ActorRef)
 
   case object AttendClass
   case object GetGradeInfo
 }
 
 class Student(userInfo: BaseUserInfo) extends Actor
-                                  with ActorLogging {
+                                      with ActorLogging {
   this: EnrollmentProvider =>
   import Student._
 
@@ -60,20 +60,20 @@ class Student(userInfo: BaseUserInfo) extends Actor
           sender ! UserInfo(userInfo, grades.toList)
       }
 
-    case SetActiveEnrollment(classroomName) =>
-      context.child(s"Enrollment_$classroomName") match {
+    case SetActiveEnrollment(classroom) =>
+      context.child(s"Enrollment_${classroom.path.name}") match {
         case Some(enrollment) =>
           context become withEnrollments(enrollment)
         case None =>
-          log info s"$self cannot find enrollment $classroomName"
+          log info s"$self cannot find enrollment ${classroom.path.name}"
       }
 
     case Enroll(classroom) =>
       context become withEnrollments(context.actorOf(Props(
         newEnrollment(classroom)), s"Enrollment_$classroom"))
 
-    case Drop(classroomName) =>
-      context.child(s"Enrollment_$classroomName") match {
+    case Drop(classroom) =>
+      context.child(s"Enrollment_${classroom.path.name}") match {
         case Some(enrollment) if enrollment == activeEnrollment =>
           context stop enrollment
           // Do I need to make sure 'stop' has completed first?
@@ -98,6 +98,17 @@ class Student(userInfo: BaseUserInfo) extends Actor
 
     case ShowAllEnrollments =>
       sender ! AllEnrollments(context.children.toList)
+
+    case ShowGradesForClassroom(classroom) =>
+      context.child(s"Enrollment_${classroom.path.name}") match {
+        case Some(enrollment) =>
+          (enrollment ? GetGradeInfo).mapTo[Iterable[Grades]] onSuccess {
+            case grades =>
+              sender ! UserInfo(userInfo, grades.toList)
+          }
+        case None =>
+          sender ! UserInfo(userInfo, Nil)
+      }
   }
 
   def receive = noEnrollments
