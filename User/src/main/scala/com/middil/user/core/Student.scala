@@ -1,7 +1,10 @@
 package com.middil.user.core
 
+import java.util.UUID
+
 import akka.actor.{Props, ActorRef, ActorLogging, Actor}
 import akka.pattern.ask
+import akka.persistence.PersistentActor
 import akka.util.Timeout
 import com.middil.dataobjects.Grades
 import scala.concurrent.Future
@@ -13,8 +16,8 @@ case class BaseUserInfo(firstName: String,
                         email: String)
 
 trait StudentProvider {
-  def newStudent(info: BaseUserInfo): Actor =
-    new Student(info) with EnrollmentProvider
+  def newStudent(info: BaseUserInfo, id: UUID): Actor =
+    new Student(info, id) with EnrollmentProvider
 }
 
 object Student {
@@ -33,8 +36,10 @@ object Student {
   case object GetGradeInfo
 }
 
-class Student(userInfo: BaseUserInfo) extends Actor
-                                      with ActorLogging {
+class Student(userInfo: BaseUserInfo, id: UUID)
+  extends Actor
+  with ActorLogging
+  with PersistentActor {
   this: EnrollmentProvider =>
   import Student._
 
@@ -42,10 +47,16 @@ class Student(userInfo: BaseUserInfo) extends Actor
   implicit val ec = context.dispatcher
 
   val BaseUserInfo(firstName, lastName, userName, email) = userInfo
+  override val persistenceId = s"student-$id-flow"
+  
+  override def receiveRecover: Receive = {
+    case e: Enroll =>
+  }
 
   def noEnrollments: Receive = {
     case ShowAllUserInfo =>
       sender ! UserInfo(userInfo, Nil)
+
     case Enroll(classroom) =>
       context become withEnrollments(context.actorOf(Props(
         newEnrollment(classroom)), s"Enrollment_${classroom.path.name}"))

@@ -23,7 +23,7 @@ class Enrollment(classroom: ActorRef) extends Actor with ActorLogging {
     case Student.GetGradeInfo =>
       sender ! GradeInfo(grades)
 
-    case m: Any =>
+    case m =>
       log info s"$self received $m"
   }
 }
