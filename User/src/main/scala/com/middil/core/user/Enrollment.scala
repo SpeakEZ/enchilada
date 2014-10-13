@@ -1,7 +1,7 @@
-package com.middil.user.core
+package com.middil.core.user
 
-import akka.actor.{ActorRef, ActorLogging, Actor}
-import com.middil.dataobjects.{Grade, Grades}
+import akka.actor.{Actor, ActorLogging, ActorRef}
+import com.middil.models.{Grade, Grades}
 
 trait EnrollmentProvider {
   def newEnrollment(classroom: ActorRef): Actor = new Enrollment(classroom)
@@ -12,7 +12,7 @@ object Enrollment {
 }
 
 class Enrollment(classroom: ActorRef) extends Actor with ActorLogging {
-  import Enrollment._
+  import com.middil.core.user.Enrollment._
 
   val grade1 = Grade("Activity 1", 1f)
   val grade2 = Grade("Activity 2", 0.5f)
