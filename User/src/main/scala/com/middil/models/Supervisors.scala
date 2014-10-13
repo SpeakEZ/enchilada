@@ -1,7 +1,7 @@
-package com.middil.user.core
+package com.middil.models
 
+import akka.actor.SupervisorStrategy.{Decider, Escalate, Resume, Stop}
 import akka.actor._
-import akka.actor.SupervisorStrategy.{Escalate, Resume, Stop, Decider}
 
 import scala.concurrent.duration.Duration
 
@@ -30,7 +30,6 @@ object IsolatedLifeCycleSupervisor {
 }
 
 trait IsolatedLifeCycleSupervisor extends Actor {
-  import IsolatedLifeCycleSupervisor._
 
   def receive = {
     case WaitForStart => sender ! Started
