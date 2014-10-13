@@ -34,6 +34,14 @@ object Student {
 
   case object AttendClass
   case object GetGradeInfo
+
+
+  // Commands ('do something')
+
+  // Events ('did something')
+  case class Enrolled
+  case class Dropped
+  case class WentToClass
 }
 
 class Student(userInfo: BaseUserInfo, id: UUID)
